@@ -11,10 +11,12 @@ from json import JSONDecodeError
 from InstagramUser import InstagramUser
 from InstagramPost import InstagramPost
 
+
 def get_md5(s):
     m = hashlib.md5()
     m.update(s.encode())
     return m.hexdigest()
+
 
 class HashTagSearch(metaclass=ABCMeta):
     instagram_root = "https://www.instagram.com"
@@ -27,7 +29,7 @@ class HashTagSearch(metaclass=ABCMeta):
         """
         super().__init__()
         self.session = requests.session()
-        self.session.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+        self.session.headers['User-Agent'] = 'Mozilla/5.0'
         self.session.cookies.set('ig_pr', '1', domain='www.instagram.com')
         self.session.cookies.set('ig_vh', '959', domain='www.instagram.com')
         self.session.cookies.set('ig_vw', '1034', domain='www.instagram.com')
@@ -52,7 +54,8 @@ class HashTagSearch(metaclass=ABCMeta):
             posts.append(post)
         self.save_results(posts)
 
-        end_cursor = shared_data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['page_info']['end_cursor']
+        hashtag = shared_data['entry_data']['TagPage'][0]['graphql']['hashtag']
+        end_cursor = hashtag['edge_hashtag_to_media']['page_info']['end_cursor']
 
         # figure out valid queryId
         success = False
@@ -62,9 +65,11 @@ class HashTagSearch(metaclass=ABCMeta):
                 'first': 4,
                 'after': end_cursor
             }
-            url = "https://www.instagram.com/graphql/query/?query_hash=%s&variables=%s" % (potential_id, json.dumps(variables).replace(" ", ""))
+            url = "https://www.instagram.com/graphql/query/?query_hash=%s&variables=%s" % (
+                potential_id, json.dumps(variables).replace(" ", ""))
             try:
-                response = self.session.get(url, headers={'X-Instagram-GIS': get_md5(shared_data['rhx_gis'] + ':' + json.dumps(variables).replace(" ", ""))})
+                response = self.session.get(url, headers={
+                    'X-Instagram-GIS': get_md5(shared_data['rhx_gis'] + ':' + json.dumps(variables).replace(" ", ""))})
                 data = response.json()
                 if data['status'] == 'fail':
                     # empty response, skip

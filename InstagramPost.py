@@ -1,5 +1,6 @@
 import re
 
+
 class InstagramPost:
     def __init__(self, post_id, code, user=None, caption="", display_src=None, is_video=False, created_at=None):
         """

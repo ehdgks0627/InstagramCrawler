@@ -231,3 +231,6 @@ $RECYCLE.BIN
 
 
 # End of httpswww.gitignore.ioapimacos,linux,python,windows,pycharm
+
+.idea/
+database.sqlite3*
